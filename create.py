@@ -1,7 +1,11 @@
 import psycopg2
 import csv
 
+<<<<<<< HEAD
 port = 5433 | 5432
+=======
+port = 5432
+>>>>>>> ebc8a69aaeda1ebe4c13f0d354fa6a97703182ad
 
 def createTable(tableName, primaryKey, columns):
     cur.execute("""
@@ -11,7 +15,7 @@ def createTable(tableName, primaryKey, columns):
     )
     """ % (tableName, primaryKey, columns))
 
-conn = psycopg2.connect("host=localhost port=%s dbname=database_cw user=postgres password=myPassword" % (port))
+conn = psycopg2.connect("host=localhost port=%s dbname=database_cw user=postgres password=password" % (port))
 cur = conn.cursor()
 # cur.execute("""CREATE TABLE movies(
 # movieId integer PRIMARY KEY,
