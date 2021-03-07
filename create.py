@@ -1,7 +1,7 @@
 import psycopg2
 import csv
 
-port = 5433
+port = 5433 | 5432
 
 def createTable(tableName, primaryKey, columns):
     cur.execute("""
