@@ -2,7 +2,7 @@ import psycopg2
 import csv
 import re
 
-port = 5433
+port = 5432
 
 def createTable(tableName, primaryKey, columns):
 
@@ -34,11 +34,12 @@ cur = conn.cursor()
 # """)
 
 def seperateNameAndYear(title):
-    match = re.match(r'.*([1-3][0-9]{3})', title[-5:-1])
+    stripped_title = title.rstrip()
+    match = re.match(r'.*([1-3][0-9]{3})', stripped_title[-5:-1])
     if match:
-        return (title[:-7], title[-5:-1])
+        return (stripped_title[:-7], stripped_title[-5:-1])
     else:
-        return (title, '')
+        return (stripped_title, '')
 
 
 genre = set()
