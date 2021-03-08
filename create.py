@@ -61,37 +61,7 @@ def add_movie_genre_relationship_table(movieId, genres, sorted_genre):
             cur.execute(
             "INSERT INTO movie_genre VALUES (%s, %s)",
             (movieId, sorted_genre.index(category) + 1))     
-###############################################################################################
-tags = set()
-def add_tags_table():
-    with open('tags.csv', 'r', encoding="utf8") as f:
-        reader = csv.reader(f)
-        next(reader) # Skip the header row.
-        for i, row in enumerate(reader, 1):
-            if row[2] not in tags:
-                tags.add(row[2])
 
-            cur.execute(
-            "INSERT INTO movie-tag VALUES (%s, %s, %s, %s, %s)",
-            (i, row[0], row[1], row[2], row[3])
-        )
-        sorted_tags = sorted(tags)
-        for tag in sorted_tags:
-            cur.execute(
-                "INSERT INTO tags VALUES (%s, %s)",
-                (sorted_tags.index(tag) + 1, tag)
-            )
-
-        for i, row in enumerate(reader, 1):
-
-            cur.execute(
-            "INSERT INTO movie-tag VALUES (%s, %s, %s)",
-            (i, row[0], row[1], row[2], row[3])
-        )
-
-
-            
-###############################################################################################
 def add_movies_table():
     sorted_genre = sorted(genre)
     with open('movies.csv', 'r', encoding="utf8") as movies, open('links.csv', 'r') as links:
@@ -108,29 +78,72 @@ def add_movies_table():
             add_movie_genre_relationship_table(row[0][0], row[0][2], sorted_genre)
 
 
-def add_ratings_table():
-    with open('ratings.csv', 'r', encoding="utf8") as f:
+# def add_ratings_table():
+#     with open('ratings.csv', 'r', encoding="utf8") as f:
+#         reader = csv.reader(f)
+#         next(reader) # Skip the header row.
+#         for i, row in enumerate(reader, 1):
+#             cur.execute(
+#             "INSERT INTO ratings VALUES (%s, %s, %s, %s, %s)",
+#             (i, row[0], row[1], row[2], row[3])
+#         )
+
+# def add_tags_table():
+#     with open('tags.csv', 'r', encoding="utf8") as f:
+#         reader = csv.reader(f)
+#         next(reader) # Skip the header row.
+#         for i, row in enumerate(reader, 1):
+#             cur.execute(
+#             "INSERT INTO ratings VALUES (%s, %s, %s, %s, %s)",
+#             (i, row[0], row[1], row[2], row[3])
+#         )
+
+def add_tags_ratings_table(fileName):
+    with open(fileName + '.csv', 'r', encoding="utf8") as f:
         reader = csv.reader(f)
         next(reader) # Skip the header row.
         for i, row in enumerate(reader, 1):
             cur.execute(
-            "INSERT INTO ratings VALUES (%s, %s, %s, %s, %s)",
-            (i, row[0], row[1], row[2], row[3])
+            "INSERT INTO " + fileName + " VALUES (%s, %s, %s, %s, %s)"
+            ,(i, row[0], row[1], row[2] , row[3])
         )
 
-
+def create_and_add_users_table():
+    cur.execute(
+        """
+        CREATE TABLE users(
+            userId integer PRIMARY KEY
+        )
+        """
+    )
+    cur.execute(
+        "INSERT INTO users SELECT DISTINCT userId FROM ratings ORDER BY userId"
+    )
+    cur.execute(
+        "INSERT INTO users SELECT DISTINCT userId FROM tags ORDER BY userId ON CONFLICT DO NOTHING"
+    )
 
 def main():
-    # add movies table    
+    # add genre table    
     createTable('genres', 'genreId integer', 'genre text')
     add_genre_table()
 
+    # add movies and movie_genre table
     createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
     createTable('movies', 'movieId integer', 'title text, year text, imdbId text, tmdbId text')
     add_movies_table()
+    
+    # add tags table
+    createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
+    add_tags_ratings_table("tags")
 
-    # createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
-    # add_ratings_table()
+    # add ratings table
+    createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
+    add_tags_ratings_table("ratings")
+    
+    # add user table
+    create_and_add_users_table()
+
 
     # createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
     # add_tags_table()
