@@ -78,9 +78,11 @@ def add_movies_table():
         next(linkReader) # Skip the header row.
         for row in zip(movieReader, linkReader):
             title, year = seperateNameAndYear(row[0][1])
+            cur.execute("SELECT AVG(RATING) FROM ratings WHERE movieId = " + str(row[0][0]))
+            avg = cur.fetchall()
             cur.execute(
-            "INSERT INTO movies VALUES (%s, %s, %s, %s, %s)",
-            (row[0][0], title, year ,row[1][1], row[1][2])
+            "INSERT INTO movies VALUES (%s, %s, %s, %s, %s, %s)",
+            (row[0][0], title, year ,row[1][1], row[1][2], avg[0])
             )
             add_movie_genre_relationship_table(row[0][0], row[0][2], sorted_genre)
 
@@ -135,18 +137,18 @@ def main():
     createTable('genres', 'genreId integer', 'genre text')
     add_genre_table()
 
+    # add ratings table
+    createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
+    add_tags_ratings_table("ratings")
+
     # add movies and movie_genre table
     createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
-    createTable('movies', 'movieId integer', 'title text, year text, imdbId text, tmdbId text')
+    createTable('movies', 'movieId integer', 'title text, year text, imdbId text, tmdbId text, avgRating text')
     add_movies_table()
     
     # add tags table
     createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
     add_tags_ratings_table("tags")
-
-    # add ratings table
-    createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
-    add_tags_ratings_table("ratings")
     
     # add user table
     create_and_add_users_table()
