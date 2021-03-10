@@ -2,7 +2,7 @@ import psycopg2
 import csv
 import re
 
-port = 5432
+port = 5433
 
 def createTable(tableName, primaryKey, columns):
 
@@ -39,7 +39,7 @@ def seperateNameAndYear(title):
     if match:
         return (stripped_title[:-7], stripped_title[-5:-1])
     else:
-        return (stripped_title, '')
+        return (stripped_title, None)
 
 
 genre = set()
@@ -143,7 +143,7 @@ def main():
 
     # add movies and movie_genre table
     createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
-    createTable('movies', 'movieId integer', 'title text, year text, imdbId text, tmdbId text, avgRating text')
+    createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating text')
     add_movies_table()
     
     # add tags table
