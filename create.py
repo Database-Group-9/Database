@@ -80,10 +80,18 @@ def add_movies_table():
             title, year = seperateNameAndYear(row[0][1])
             cur.execute("SELECT AVG(RATING) FROM ratings WHERE movieId = " + str(row[0][0]))
             avg = cur.fetchall()
-            cur.execute(
-            "INSERT INTO movies VALUES (%s, %s, %s, %s, %s, %s)",
-            (row[0][0], title, year ,row[1][1], row[1][2], avg[0])
-            )
+            # avg = avg if avg else [0]
+            # print(type(avg[0][0]))
+            if type(avg[0][0]) is float:
+                cur.execute(
+                "INSERT INTO movies VALUES (%s, %s, %s, %s, %s, %s)",
+                (row[0][0], title, year ,row[1][1], row[1][2], avg[0][0])
+                )
+            else:
+                cur.execute(
+                "INSERT INTO movies VALUES (%s, %s, %s, %s, %s, %s)",
+                (row[0][0], title, year ,row[1][1], row[1][2], 0)
+                )
             add_movie_genre_relationship_table(row[0][0], row[0][2], sorted_genre)
 
 
@@ -132,25 +140,51 @@ def create_and_add_users_table():
         "INSERT INTO users SELECT DISTINCT userId FROM tags ORDER BY userId ON CONFLICT DO NOTHING"
     )
 
+def drop_all_tables():
+    cur.execute(
+        """
+        DROP TABLE genres;
+        DROP TABLE ratings;
+        DROP TABLE movies;
+        DROP TABLE movie_genre;
+        DROP TABLE tags;
+        DROP TABLE users;
+        """
+    )
+
+def find_likes_and_dislikes():
+    like = {}
+    
+
 def main():
-    # add genre table    
+    # DROP ALL TABLES
+    print("Dropping tables...")
+    drop_all_tables()
+
+    # add genres table
+    print("Creating genres table...")
     createTable('genres', 'genreId integer', 'genre text')
     add_genre_table()
 
     # add ratings table
+    print("Creating ratings table...")
     createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
     add_tags_ratings_table("ratings")
 
     # add movies and movie_genre table
+    print("Creating movie_genre table...")
     createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
+    print("Creating movie table...")
     createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating text')
     add_movies_table()
     
     # add tags table
+    print("Creating tags table...")
     createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
     add_tags_ratings_table("tags")
     
     # add user table
+    print("Creating users table...")
     create_and_add_users_table()
 
 
