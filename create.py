@@ -175,7 +175,7 @@ def main():
     print("Creating movie_genre table...")
     createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
     print("Creating movie table...")
-    createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating text')
+    createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating float')
     add_movies_table()
     
     # add tags table
