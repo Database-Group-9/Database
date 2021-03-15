@@ -2,7 +2,7 @@ import psycopg2
 import csv
 import re
 
-port = 5433
+port = 5432
 
 def createTable(tableName, primaryKey, columns):
 
@@ -140,6 +140,16 @@ def create_and_add_users_table():
         "INSERT INTO users SELECT DISTINCT userId FROM tags ORDER BY userId ON CONFLICT DO NOTHING"
     )
 
+def add_user_personality_table():
+    with open('personality-data.csv', 'r', encoding="utf8") as f:
+        reader = csv.reader(f)
+        next(reader) # Skip the header row.
+        for i, row in enumerate(reader, 1):
+            cur.execute(
+            "INSERT INTO user_personality VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING"
+            ,(row[0], row[1], row[2] , row[3], row[4], row[5])
+        )
+
 def drop_all_tables():
     cur.execute(
         """
@@ -151,43 +161,49 @@ def drop_all_tables():
         DROP TABLE users;
         """
     )
-
-def find_likes_and_dislikes():
-    like = {}
     
 
 def main():
-    # DROP ALL TABLES
-    print("Dropping tables...")
-    drop_all_tables()
+    # # DROP ALL TABLES
+    # print("Dropping tables...")
+    # drop_all_tables()
 
-    # add genres table
-    print("Creating genres table...")
-    createTable('genres', 'genreId integer', 'genre text')
-    add_genre_table()
+    # # add genres table
+    # print("Creating genres table...")
+    # createTable('genres', 'genreId integer', 'genre text')
+    # add_genre_table()
 
-    # add ratings table
-    print("Creating ratings table...")
-    createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
-    add_tags_ratings_table("ratings")
+    # # add ratings table
+    # print("Creating ratings table...")
+    # createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
+    # add_tags_ratings_table("ratings")
 
-    # add movies and movie_genre table
-    print("Creating movie_genre table...")
-    createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
-    print("Creating movie table...")
-    createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating float')
-    add_movies_table()
+    # # add movies and movie_genre table
+    # print("Creating movie_genre table...")
+    # createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
+    # print("Creating movie table...")
+    # createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating float')
+    # add_movies_table()
     
-    # add tags table
-    print("Creating tags table...")
-    createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
-    add_tags_ratings_table("tags")
+    # # add tags table
+    # print("Creating tags table...")
+    # createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
+    # add_tags_ratings_table("tags")
     
-    # add user table
-    print("Creating users table...")
-    create_and_add_users_table()
+    # # add user table
+    # print("Creating users table...")
+    # create_and_add_users_table()
 
+    # add user_personality table
+    print("Creating user personality table...")
+    createTable('user_personality', 'personality_userId text', 'openness float, agreeableness float, emotional_stability float, conscientiousness float, extraversion float')
+    add_user_personality_table()
 
+    # add personality ratings table
+    print("Creating personality ratings table...")
+    createTable('personality_ratings', 'personality_ratingId integer', 'personality_userId text, movieId integer, rating float, rating_tstamp timestamp')
+    add_tags_ratings_table("personality_ratings")
+    
     # createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
     # add_tags_table()
 
