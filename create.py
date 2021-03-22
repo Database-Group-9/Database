@@ -4,6 +4,30 @@ import re
 
 port = 5432
 
+conn = psycopg2.connect("host=db dbname=database_cw port=%s user=postgres password=myPassword" % (port))
+cur = conn.cursor()
+
+#establishing the connection
+# conn = psycopg2.connect(
+#     database="postgres", user='postgres', password='myPassword', host='db', port= '5432')
+# #Creating a cursor object using the cursor() method
+# cur = conn.cursor()
+
+# def createDatabase():
+#     # conn = psycopg2.connect(
+#     # database="postgres", user='postgres', password='myPassword', host='127.0.0.1', port= '5432')
+        
+#     #Preparing query to create a database
+#     sql = '''CREATE database database_cw'''
+
+#     #Creating a database
+#     cur.execute(sql)
+#     print("Database created successfully........")
+
+#     conn.commit()
+#     #Closing the connection
+#     conn.close()
+
 def createTable(tableName, primaryKey, columns):
 
     cur.execute("""
@@ -24,14 +48,7 @@ def createRelationshipTable(tableName, foreignKey1, foreignKey2):
     )
     """ % (tableName, foreignKey1, foreignKey2, foreignKey1.split(' ')[0], foreignKey2.split(' ')[0]))
 
-conn = psycopg2.connect("host=localhost port=%s dbname=database_cw user=postgres password=myPassword" % (port))
-cur = conn.cursor()
-# cur.execute("""CREATE TABLE movies(
-# movieId integer PRIMARY KEY,
-# title text,
-# year text
-# )
-# """)
+
 
 def seperateNameAndYear(title):
     stripped_title = title.rstrip()
@@ -94,27 +111,6 @@ def add_movies_table():
                 )
             add_movie_genre_relationship_table(row[0][0], row[0][2], sorted_genre)
 
-
-# def add_ratings_table():
-#     with open('ratings.csv', 'r', encoding="utf8") as f:
-#         reader = csv.reader(f)
-#         next(reader) # Skip the header row.
-#         for i, row in enumerate(reader, 1):
-#             cur.execute(
-#             "INSERT INTO ratings VALUES (%s, %s, %s, %s, %s)",
-#             (i, row[0], row[1], row[2], row[3])
-#         )
-
-# def add_tags_table():
-#     with open('tags.csv', 'r', encoding="utf8") as f:
-#         reader = csv.reader(f)
-#         next(reader) # Skip the header row.
-#         for i, row in enumerate(reader, 1):
-#             cur.execute(
-#             "INSERT INTO ratings VALUES (%s, %s, %s, %s, %s)",
-#             (i, row[0], row[1], row[2], row[3])
-#         )
-
 def add_tags_ratings_table(fileName):
     with open(fileName + '.csv', 'r', encoding="utf8") as f:
         reader = csv.reader(f)
@@ -153,46 +149,53 @@ def add_user_personality_table():
 def drop_all_tables():
     cur.execute(
         """
-        DROP TABLE genres;
-        DROP TABLE ratings;
-        DROP TABLE movies;
-        DROP TABLE movie_genre;
-        DROP TABLE tags;
-        DROP TABLE users;
+        DROP TABLE IF EXISTS genres;
+        DROP TABLE IF EXISTS ratings;
+        DROP TABLE IF EXISTS movies;
+        DROP TABLE IF EXISTS movie_genre;
+        DROP TABLE IF EXISTS tags;
+        DROP TABLE IF EXISTS users;
         """
     )
     
 
 def main():
-    # # DROP ALL TABLES
-    # print("Dropping tables...")
+    # DROP ALL TABLES
+    # print("Dropping tables (if exists)...")
     # drop_all_tables()
 
-    # # add genres table
-    # print("Creating genres table...")
-    # createTable('genres', 'genreId integer', 'genre text')
-    # add_genre_table()
-
-    # # add ratings table
-    # print("Creating ratings table...")
-    # createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
-    # add_tags_ratings_table("ratings")
-
-    # # add movies and movie_genre table
-    # print("Creating movie_genre table...")
-    # createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
-    # print("Creating movie table...")
-    # createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating float')
-    # add_movies_table()
+    # Creating database
+    # print("Creating database...")
+    # createDatabase()
+    # print("Database created...")
     
-    # # add tags table
-    # print("Creating tags table...")
-    # createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
-    # add_tags_ratings_table("tags")
     
-    # # add user table
-    # print("Creating users table...")
-    # create_and_add_users_table()
+    
+    # add genres table
+    print("Creating genres table...")
+    createTable('genres', 'genreId integer', 'genre text')
+    add_genre_table()
+
+    # add ratings table
+    print("Creating ratings table...")
+    createTable('ratings', 'ratingId integer', 'userId integer, movieId integer, rating float, timestamp integer')
+    add_tags_ratings_table("ratings")
+
+    # add movies and movie_genre table
+    print("Creating movie_genre table...")
+    createRelationshipTable('movie_genre', 'movieId integer', 'genreId integer')
+    print("Creating movie table...")
+    createTable('movies', 'movieId integer', 'title text, year integer, imdbId text, tmdbId text, avgRating float')
+    add_movies_table()
+    
+    # add tags table
+    print("Creating tags table...")
+    createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
+    add_tags_ratings_table("tags")
+    
+    # add user table
+    print("Creating users table...")
+    create_and_add_users_table()
 
     # add user_personality table
     print("Creating user personality table...")
@@ -203,19 +206,8 @@ def main():
     print("Creating personality ratings table...")
     createTable('personality_ratings', 'personality_ratingId integer', 'personality_userId text, movieId integer, rating float, rating_tstamp timestamp')
     add_tags_ratings_table("personality_ratings")
-    
-    # createTable('tags', 'tagId integer', 'userId integer, movieId integer, tag text, timestamp integer')
-    # add_tags_table()
-
-    
-
-    """personality table userid, Openness,Agreeableness,Emotional_stability (bruhh), Conscientiousness,extraversion,
-     assigned metric, assigned condition, MovieId [1..12],Predicted_rating [1..12], is_personalized, enjoy_watching 
-    """
 
     conn.commit() #commit everything
 
-
-    
-    
 main()
+conn.close()
