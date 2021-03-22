@@ -1,10 +1,10 @@
 import psycopg2
 import csv
-import re
+# from clean import *
 
 port = 5432
 
-conn = psycopg2.connect("host=db dbname=database_cw port=%s user=postgres password=myPassword" % (port))
+conn = psycopg2.connect("host=172.28.1.4 dbname=database_cw port=%s user=postgres password=myPassword" % (port))
 cur = conn.cursor()
 
 #establishing the connection
@@ -160,6 +160,8 @@ def drop_all_tables():
     
 
 def main():
+    # clean.main()
+
     # DROP ALL TABLES
     # print("Dropping tables (if exists)...")
     # drop_all_tables()

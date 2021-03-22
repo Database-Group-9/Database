@@ -10,7 +10,8 @@ EXPOSE 5432
 
 RUN pip3 install psycopg2
 
-RUN python clean.py
+# RUN python clean.py
 # CMD ["python", "clean.py"]
 RUN python create.py
 # CMD ["python", "create.py"]
+# CMD ["sh", "-c", "python clean.py ; python create.py"]
